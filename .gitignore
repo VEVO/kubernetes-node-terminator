@@ -1,0 +1,9 @@
+stringer_spec
+stringer_build
+vendor
+bin/glide
+.idea
+pkg
+src
+terminator
+kubernetes-node-terminator

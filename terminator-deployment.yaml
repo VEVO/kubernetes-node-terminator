@@ -1,0 +1,44 @@
+---
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  labels:
+    name: terminator
+  name: terminator
+  namespace: kube-system
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      name: terminator
+  template:
+    metadata:
+      labels:
+        name: terminator
+    spec:
+      containers:
+      - env:
+        - name: AWS_REGION
+          value: us-east-1
+        image: vevo/terminator:latest
+        imagePullPolicy: IfNotPresent
+        name: terminator
+        terminationMessagePath: /dev/termination-log
+        volumeMounts:
+        - mountPath: /etc/ssl/certs
+          name: ssl-certs-host
+          readOnly: true
+        resources:
+          limits:
+            cpu: 100m
+            memory: 30mi
+          requests:
+            cpu: 100m
+            memory: 30mi
+      dnsPolicy: Default
+      restartPolicy: Always
+      terminationGracePeriodSeconds: 30
+      volumes:
+      - hostPath:
+          path: /usr/share/ca-certificates
+        name: ssl-certs-host

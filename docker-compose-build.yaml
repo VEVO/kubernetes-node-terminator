@@ -1,0 +1,16 @@
+version: '2'
+
+services:
+  binary:
+    image: golang:1.7
+    environment:
+        - BINARY_NAME=${BINARY_NAME}
+    volumes:
+      - ./:/go/src/a/${BINARY_NAME}
+    command: ./bin/build
+    working_dir: /go/src/a/${BINARY_NAME}
+  app:
+    depends_on:
+      - "binary"
+    build: .
+    image: ${IMAGE_NAME}

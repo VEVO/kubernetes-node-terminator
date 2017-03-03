@@ -1,0 +1,8 @@
+package: github.com/VEVO/kubernetes-node-terminator
+import:
+- package: github.com/golang/glog
+- package: k8s.io/client-go
+  subpackages:
+  - kubernetes
+  - pkg/api/v1
+  - rest
