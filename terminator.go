@@ -115,8 +115,9 @@ func main() {
 		flag.Lookup("v").Value.Set("2")
 	}
 
-	if dryRunStr != "" {
-		dryRun = true
+	dryRun, err := strconv.ParseBool(dryRunStr)
+	if err != nil {
+		glog.Fatalf("Error parsing DRY_RUN value: %s", err)
 	}
 
 	if awsRegion == "" {
