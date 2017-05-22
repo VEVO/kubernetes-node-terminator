@@ -24,6 +24,14 @@ spec:
         imagePullPolicy: IfNotPresent
         name: terminator
         terminationMessagePath: /dev/termination-log
+        ports:
+          - containerPort: 8080
+        livenessProbe:
+          httpGet:
+            path: /healthz
+            port: 8080
+          initialDelaySeconds: 10
+          periodSeconds: 10
         volumeMounts:
         - mountPath: /etc/ssl/certs
           name: ssl-certs-host

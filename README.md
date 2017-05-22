@@ -30,6 +30,7 @@ INTERVAL_SECONDS = Frequency that we poll for unhealthy nodes.   Default is 60 s
 DELAY_BETWEEN_TERMINATIONS = When terminating multiple nodes how many seconds should we delay between each termination.  Default is 300 seconds.
 AWS_REGION = What AWS region is the pod running in.
 MAX_UNHEALTHY = No action will be taken if the current number of unhealthy nodes is greater than this setting.   The default is 1.
+HEALTH_PORT = What port to listen on for http health checks.  The default is 8080.
 ```
 
 # Deploy
