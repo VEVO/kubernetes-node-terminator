@@ -3,6 +3,7 @@ package main
 import (
 	"flag"
 	"fmt"
+	"net/http"
 	"os"
 	"strconv"
 	"time"
@@ -23,6 +24,8 @@ var (
 	interval            = time.Duration(60)
 	maxUnhealthyStr     = os.Getenv("MAX_UNHEALTHY")
 	maxUnhealthy        = 1
+	healthPortStr       = os.Getenv("HEALTH_PORT")
+	healthPort          = "8080"
 )
 
 type instance struct {
@@ -35,6 +38,7 @@ type terminatorState struct {
 	k8sClient     kubernetesClient
 	awsClient     *awsClient
 	datadogClient *datadogClient
+	heartBeat     time.Time
 }
 
 func (t *terminatorState) okToTerminate(instanceID string) bool {
@@ -143,6 +147,10 @@ func main() {
 		maxUnhealthy = t
 	}
 
+	if healthPortStr != "" {
+		healthPort = healthPortStr
+	}
+
 	glog.Infof("Terminator started. Interval is %d, delay is %d and dry run mode is %t", interval, terminationDelay, dryRun)
 
 	nodesController := kubernetesNodes{}
@@ -153,10 +161,28 @@ func main() {
 	state := &terminatorState{
 		awsClient:     newAwsClient(dryRun),
 		k8sClient:     newClient(),
-		datadogClient: newDatadogClient(datadogSvcAddress)}
+		datadogClient: newDatadogClient(datadogSvcAddress),
+		heartBeat:     time.Now()}
 
 	state.datadogClient.title = "Kubernetes Cluster: Node Terminator"
 	state.datadogClient.tags = "#kubernetes,docker"
+
+	http.HandleFunc("/healthz", func(w http.ResponseWriter, r *http.Request) {
+		// Current timestamp minus 2 intervals to allow a little buffer
+		now := time.Now().Add(-(interval * 2) * time.Second)
+
+		if now.After(state.heartBeat) {
+			glog.V(4).Infof("Health failing - hearbeat time %s", state.heartBeat)
+			w.WriteHeader(500)
+			w.Write([]byte("error"))
+		} else {
+			glog.V(4).Infof("Health passing - hearbeat time %s", state.heartBeat)
+			w.WriteHeader(200)
+			w.Write([]byte("ok"))
+		}
+	})
+
+	go http.ListenAndServe(":"+healthPort, nil)
 
 	for {
 		glog.Info("Checking for unhealthy instances")
@@ -176,6 +202,7 @@ func main() {
 				if err != nil {
 					glog.Errorf("An error occurred terminating instance %s\n. Error: %s", instanceID, err)
 				}
+				state.heartBeat = time.Now()
 				time.Sleep(time.Second * terminationDelay)
 			}
 
@@ -184,6 +211,7 @@ func main() {
 		}
 
 		state.expireTerminatedInstances()
+		state.heartBeat = time.Now()
 		time.Sleep(time.Second * interval)
 	}
 }
