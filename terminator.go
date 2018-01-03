@@ -78,6 +78,9 @@ func (t *terminatorState) terminateInstance(instanceID string) error {
 		eventText := fmt.Sprintf("Terminating unhealthy instance %s.", instanceID)
 		glog.Info(eventText)
 		err = t.datadogClient.sendEvent(eventText)
+		if err != nil {
+			glog.Infof("Unable to send event to Datadog: %s", err)
+		}
 
 		i := &instance{
 			instanceID:   instanceID,
