@@ -1,5 +1,4 @@
+# Getting a small image with only the binary
 FROM scratch
-
-ADD terminator /terminator
-
+COPY terminator /
 ENTRYPOINT ["/terminator"]

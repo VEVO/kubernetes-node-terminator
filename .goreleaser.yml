@@ -1,0 +1,45 @@
+project_name: terminator
+before:
+  hooks:
+    - make go-dep
+builds:
+- env:
+  - CGO_ENABLED=0
+  goos:
+    - linux
+    - darwin
+    - windows
+  goarch:
+    - 386
+    - amd64
+archive:
+  replacements:
+    darwin: Darwin
+    linux: Linux
+    windows: Windows
+    386: i386
+    amd64: x86_64
+checksum:
+  name_template: 'checksums.txt'
+snapshot:
+  name_template: "{{ .Tag }}-next"
+changelog:
+  sort: asc
+  filters:
+    exclude:
+    - '^docs:'
+    - '^test:'
+dockers:
+  - 
+    # GOOS of the built binary that should be used.
+    goos: linux
+    # GOARCH of the built binary that should be used.
+    goarch: amd64
+    image_templates:
+    - "vevo/{{ .ProjectName}}:latest"
+    - "vevo/{{ .ProjectName}}:{{ .Tag }}"
+    skip_push: false
+    # Path to the Dockerfile (from the project root).
+    dockerfile: Dockerfile
+    # extra_files:
+    # - /etc/ssl/certs/ca-certificates.crt
