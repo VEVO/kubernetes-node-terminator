@@ -1,6 +1,6 @@
 # setting some defaults if those variables are empty
 OWNER=vevo
-APP_NAME=awsRetagger
+APP_NAME=terminator
 IMAGE_NAME=$(OWNER)/$(APP_NAME)
 GO_REVISION?=$(shell git rev-parse HEAD)
 GO_TO_REVISION?=$(GO_REVISION)
