@@ -19,38 +19,19 @@ docker-login:
 	@docker login -u "$(DOCKER_USER)" -p "$(DOCKER_PASS)"
 
 go-dep:
-	@if [ -f "glide.yaml" ] ; then \
-		go get github.com/Masterminds/glide \
-		&& go install github.com/Masterminds/glide \
-		&& glide install --strip-vendor; \
-	elif [ -f "Godeps/Godeps.json" ] ; then \
-		go get github.com/tools/godep \
-		&& godep restore; \
-	else \
-		go get -d -t -v ./...; \
-	fi
+	go get -d -t -v ./...
 
-GOFILES_NOVENDOR=$(shell find . -type f -name '*.go' -not -path "./vendor/*")
 
 go-fmt:
-	@[ $$(gofmt -l $(GOFILES_NOVENDOR) | wc -l) -gt 0 ] && echo "Code differs from gofmt's style" && exit 1 || true
+	gofmt -s -w .
 
 go-lint: go-fmt
-	@go get -u golang.org/x/lint/golint; \
-	if [ -f "glide.yaml" ] ; then \
-		golint -set_exit_status $$(glide novendor); \
-		go vet -v $$(glide novendor); \
-	else \
-		golint -set_exit_status ./...; \
-		go vet -v ./...; \
-	fi
+	go get -u golang.org/x/lint/golint
+	golint -set_exit_status ./...
+	go vet -v ./...
 
 go-test:
-	@if [ -f "glide.yaml" ] ; then \
-		go test $$(glide novendor); \
-	else \
-		go test -v ./...; \
-	fi
+	go test -v ./...
 
 go-build: go-dep go-lint go-test
 	@go build -v -a -ldflags "-X main.version=$(BUILD_VERSION)"
